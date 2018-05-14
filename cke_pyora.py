@@ -356,7 +356,7 @@ class Checks(object):
         (SELECT tablespace_name,TRUNC(SUM(bytes)/1024/1024) AS size_mb,TRUNC(SUM(GREATEST(bytes,maxbytes))/1024/1024) AS max_size_mb
         From   Dba_Data_Files Group By Tablespace_Name) B Where  A.Tablespace_Name = B.Tablespace_Name
         ) Order By 1
-        ) where used > '{0}'''.format(threshold)
+        ) where used > {0}'''.format(threshold)
         self.cur.execute(sql)
         res = self.cur.fetchall()
         for i in res:
