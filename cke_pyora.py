@@ -433,6 +433,19 @@ class Checks(object):
         for i in res:
             print i[0]
 
+    def asm_volume_usage(self,threshold):
+        """Return ASM volume size usage grater than threshold"""
+        sql = ''' select group_name,used 
+        from (
+        SELECT name group_name, ROUND((1- (free_mb / total_mb))*100, 2)  used
+        FROM v$asm_diskgroup
+        ) where used > {0}'''.format(threshold)
+        self.cur.execute(sql)
+        res = self.cur.fetchall()
+        for i in res:
+            print i[0]
+
+
     def query_lock(self):
         """Query lock"""
         sql = "SELECT count(*) FROM gv$lock l WHERE  block=1"
