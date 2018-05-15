@@ -8,8 +8,7 @@ import inspect
 import json
 import re
 
-version = 1.0
-
+version = 1.1
 
 class Checks(object):
     def check_active(self):
