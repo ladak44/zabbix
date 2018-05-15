@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 # vim: tabstop=2 noexpandtab
-"""
-    Author: Danilo F. Chilene
-	Email:	bicofino at gmail dot com
-"""
 
 import argparse
 import cx_Oracle
@@ -12,7 +8,7 @@ import inspect
 import json
 import re
 
-version = 0.2
+version = 1.0
 
 
 class Checks(object):
@@ -346,7 +342,7 @@ class Checks(object):
             print i[1]
 
     def tablespace_usage(self,threshold):
-        """"Return all tablespace whit size larger than threshold"""
+        """"Return all tablespace with size larger than threshold in %"""
         sql = '''Select Tablespace_Name,Used 
         from(
         SELECT  tablespace_name,
@@ -362,6 +358,22 @@ class Checks(object):
         for i in res:
             print i[1]
 
+    def tablespace_usage_excl(self,threshold,list):
+        """"Return tablespace (with exceptions) size with size larger than threshold in %"""
+        sql = '''Select Tablespace_Name,Used 
+        from(
+        SELECT  tablespace_name,
+        100-(TRUNC((max_free_mb/max_size_mb) * 100)) AS USED
+        FROM ( SELECT a.tablespace_name,b.size_mb,a.free_mb,b.max_size_mb,a.free_mb + (b.max_size_mb - b.size_mb) AS max_free_mb
+        FROM   (SELECT tablespace_name,TRUNC(SUM(bytes)/1024/1024) AS free_mb FROM dba_free_space GROUP BY tablespace_name) a,
+        (SELECT tablespace_name,TRUNC(SUM(bytes)/1024/1024) AS size_mb,TRUNC(SUM(GREATEST(bytes,maxbytes))/1024/1024) AS max_size_mb
+        From   Dba_Data_Files Group By Tablespace_Name) B Where  A.Tablespace_Name = B.Tablespace_Name
+        ) Order By 1
+        ) where used > {0} and Tablespace_Name not in {1}'''.format(threshold,list)
+        self.cur.execute(sql)
+        res = self.cur.fetchall()
+        for i in res:
+            print i[1]
 
     def tablespace_abs(self, name):
         """Get tablespace in use"""
