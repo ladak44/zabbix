@@ -369,6 +369,9 @@ class Checks(object):
         From   Dba_Data_Files Group By Tablespace_Name) B Where  A.Tablespace_Name = B.Tablespace_Name
         ) Order By 1
         ) where used > {0} and Tablespace_Name not in ({1})'''.format(threshold,list)
+
+        print sql
+
         self.cur.execute(sql)
         res = self.cur.fetchall()
         for i in res:
