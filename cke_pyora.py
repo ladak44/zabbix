@@ -8,18 +8,9 @@ import inspect
 import json
 import re
 
-version = 1.2
+version = 1.1
 
 class Checks(object):
-
-
-    def check_ping(self):
-        """This is to check reponse time."""
-        sql = "select * from dual"
-        self.cur.execute(sql)
-        res = self.cur.fetchall()
-        for i in res:
-            print i[0]
 
 
     def check_active(self):
@@ -33,6 +24,13 @@ class Checks(object):
         for i in res:
             print i[0]
 
+    def check_ping(self):
+        """This is to check reponse time."""
+        sql = "select * from dual"
+        self.cur.execute(sql)
+        res = self.cur.fetchall()
+        for i in res:
+            print i[0]
 
     def dbsize(self):
         """Size of user data (without temp)"""
