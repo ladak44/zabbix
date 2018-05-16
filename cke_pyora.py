@@ -12,7 +12,6 @@ version = 1.1
 
 class Checks(object):
 
-
     def check_active(self):
         """Check Intance is active and open"""
         sql = "select to_char(case when inst_cnt > 0 then 1 else 0 end, \
@@ -23,6 +22,9 @@ class Checks(object):
         res = self.cur.fetchall()
         for i in res:
             print i[0]
+
+    def check_test(self):
+        print None
 
     def check_ping(self):
         """This is to check reponse time."""
