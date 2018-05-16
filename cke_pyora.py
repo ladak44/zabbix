@@ -23,9 +23,6 @@ class Checks(object):
         for i in res:
             print i[0]
 
-    def check_test(self):
-        print None
-
     def check_ping(self):
         """This is to check reponse time."""
         sql = "select * from dual"
