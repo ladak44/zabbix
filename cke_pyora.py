@@ -11,6 +11,15 @@ import re
 version = 1.1
 
 class Checks(object):
+
+    def check_ping(self):
+        """This is to check reponse time."""
+        sql = "select * from dual"
+        self.cur.execute(sql)
+        res = self.cur.fetchall()
+        for i in res:
+            print i[0]
+
     def check_active(self):
         """Check Intance is active and open"""
         sql = "select to_char(case when inst_cnt > 0 then 1 else 0 end, \
@@ -338,7 +347,7 @@ class Checks(object):
         self.cur.execute(sql)
         res = self.cur.fetchall()
         for i in res:
-            print i[1]
+            print "Tablespace " + i[0] + " is " + str(i[1]) + "% full."
 
     def tablespace_usage(self,threshold):
         """"Return all tablespace with size larger than threshold in %"""
@@ -355,7 +364,7 @@ class Checks(object):
         self.cur.execute(sql)
         res = self.cur.fetchall()
         for i in res:
-            print i[1]
+            print "Tablespace " + i[0] + " is " + str(i[1]) + "% full."
 
     def tablespace_usage_excl(self,threshold,list):
         """"Return tablespace (with exceptions) size with size larger than threshold in %"""
@@ -370,12 +379,10 @@ class Checks(object):
         ) Order By 1
         ) where used > {0} and Tablespace_Name not in ({1})'''.format(threshold,list)
 
-        print sql
-
         self.cur.execute(sql)
         res = self.cur.fetchall()
         for i in res:
-            print i[1]
+            print "Tablespace "+ i[0] + " is " + str(i[1]) + "% full."
 
     def tablespace_abs(self, name):
         """Get tablespace in use"""
@@ -457,8 +464,7 @@ class Checks(object):
         self.cur.execute(sql)
         res = self.cur.fetchall()
         for i in res:
-            print i[0]
-
+            print "Disk Group " + i[0] + " is " + str(i[1]) + "% full."
 
     def query_lock(self):
         """Query lock"""
