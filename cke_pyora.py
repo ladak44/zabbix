@@ -8,9 +8,10 @@ import inspect
 import json
 import re
 
-version = 1.1
+version = 1.2
 
 class Checks(object):
+
 
     def check_ping(self):
         """This is to check reponse time."""
@@ -19,6 +20,7 @@ class Checks(object):
         res = self.cur.fetchall()
         for i in res:
             print i[0]
+
 
     def check_active(self):
         """Check Intance is active and open"""
