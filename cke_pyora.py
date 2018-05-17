@@ -348,8 +348,9 @@ class Checks(object):
         for i in res:
             print "Tablespace " + i[0] + " is " + str(i[1]) + "% full."
 
-    def tablespace_usage(self,threshold):
-        """"Return all tablespace with size larger than threshold in %"""
+    def tablespace_usage_txt(self,threshold):
+        """"Return all tablespace with size larger than threshold in %
+            It returns only name of this tablespace (string)"""
         sql = '''Select Tablespace_Name,Used 
         from(
         SELECT  tablespace_name,
@@ -363,10 +364,30 @@ class Checks(object):
         self.cur.execute(sql)
         res = self.cur.fetchall()
         for i in res:
-            print "Tablespace " + i[0] + " is " + str(i[1]) + "% full."
+            print i[0]
 
-    def tablespace_usage_excl(self,threshold,list):
-        """"Return tablespace (with exceptions) size with size larger than threshold in %"""
+    def tablespace_usage_num(self,threshold):
+        """"Return all tablespace with size larger than threshold in %
+            It returns only value of this tablespace (num)"""
+        sql = '''Select Tablespace_Name,Used 
+        from(
+        SELECT  tablespace_name,
+        100-(TRUNC((max_free_mb/max_size_mb) * 100)) AS USED
+        FROM ( SELECT a.tablespace_name,b.size_mb,a.free_mb,b.max_size_mb,a.free_mb + (b.max_size_mb - b.size_mb) AS max_free_mb
+        FROM   (SELECT tablespace_name,TRUNC(SUM(bytes)/1024/1024) AS free_mb FROM dba_free_space GROUP BY tablespace_name) a,
+        (SELECT tablespace_name,TRUNC(SUM(bytes)/1024/1024) AS size_mb,TRUNC(SUM(GREATEST(bytes,maxbytes))/1024/1024) AS max_size_mb
+        From   Dba_Data_Files Group By Tablespace_Name) B Where  A.Tablespace_Name = B.Tablespace_Name
+        ) Order By 1
+        ) where used > {0}'''.format(threshold)
+        self.cur.execute(sql)
+        res = self.cur.fetchall()
+        for i in res:
+            print i[1]
+
+
+    def tablespace_usage_excl_txt(self,threshold,list):
+        """"Return tablespace (with exceptions) size with size larger than threshold in %
+            It returns only name of this tablespace (string)"""
         sql = '''Select Tablespace_Name,Used 
         from(
         SELECT  tablespace_name,
@@ -381,7 +402,27 @@ class Checks(object):
         self.cur.execute(sql)
         res = self.cur.fetchall()
         for i in res:
-            print "Tablespace "+ i[0] + " is " + str(i[1]) + "% full."
+            print i[0]
+
+    def tablespace_usage_excl_num(self,threshold,list):
+        """"Return tablespace (with exceptions) size with size larger than threshold in %
+            It returns only value of this tablespace (num)"""
+        sql = '''Select Tablespace_Name,Used 
+        from(
+        SELECT  tablespace_name,
+        100-(TRUNC((max_free_mb/max_size_mb) * 100)) AS USED
+        FROM ( SELECT a.tablespace_name,b.size_mb,a.free_mb,b.max_size_mb,a.free_mb + (b.max_size_mb - b.size_mb) AS max_free_mb
+        FROM   (SELECT tablespace_name,TRUNC(SUM(bytes)/1024/1024) AS free_mb FROM dba_free_space GROUP BY tablespace_name) a,
+        (SELECT tablespace_name,TRUNC(SUM(bytes)/1024/1024) AS size_mb,TRUNC(SUM(GREATEST(bytes,maxbytes))/1024/1024) AS max_size_mb
+        From   Dba_Data_Files Group By Tablespace_Name) B Where  A.Tablespace_Name = B.Tablespace_Name
+        ) Order By 1
+        ) where used > {0} and Tablespace_Name not in ({1})'''.format(threshold,list)
+
+        self.cur.execute(sql)
+        res = self.cur.fetchall()
+        for i in res:
+            print i[1]
+
 
     def tablespace_abs(self, name):
         """Get tablespace in use"""
@@ -453,8 +494,9 @@ class Checks(object):
         for i in res:
             print i[0]
 
-    def asm_volume_usage(self,threshold):
-        """Return ASM volume size usage grater than threshold"""
+    def asm_volume_usage_txt(self,threshold):
+        """Return ASM volume size usage grater than threshold
+            It returns only the name of this group (string)."""
         sql = ''' select group_name,used 
         from (
         SELECT name group_name, ROUND((1- (free_mb / total_mb))*100, 2)  used
@@ -463,7 +505,20 @@ class Checks(object):
         self.cur.execute(sql)
         res = self.cur.fetchall()
         for i in res:
-            print "Disk Group " + i[0] + " is " + str(i[1]) + "% full."
+            print i[0]
+
+    def asm_volume_usage_num(self,threshold):
+        """Return ASM volume size usage grater than threshold
+            It return only the value of this group (num)"""
+        sql = ''' select group_name,used 
+        from (
+        SELECT name group_name, ROUND((1- (free_mb / total_mb))*100, 2)  used
+        FROM v$asm_diskgroup
+        ) where used > {0}'''.format(threshold)
+        self.cur.execute(sql)
+        res = self.cur.fetchall()
+        for i in res:
+            print i[1]
 
     def query_lock(self):
         """Query lock"""
@@ -526,6 +581,18 @@ class Checks(object):
         res = self.cur.fetchall()
         for i in res:
             print i[0]
+
+    def fra_usage(self,threshold):
+        """Check FRA usage if it's larger than threshold"""
+        sql = "Select used from ( \
+               select round((SPACE_LIMIT-(SPACE_LIMIT-SPACE_USED))/ \
+               SPACE_LIMIT*100,2) used FROM V$RECOVERY_FILE_DEST ) \
+               where > '{0}'".format(threshold)
+        self.cur.execute(sql)
+        res = self.cur.fetchall()
+        for i in res:
+            print i[0]
+
 
     def show_users(self):
         """Query the list of users on the instance"""
