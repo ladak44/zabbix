@@ -380,7 +380,7 @@ class Checks(object):
         self.cur.execute(sql)
         res = self.cur.fetchall()
         for i in res:
-            print i[1]
+            print int(i[1])
 
 
     def tablespace_usage_excl_txt(self,list):
@@ -512,7 +512,7 @@ class Checks(object):
         self.cur.execute(sql)
         res = self.cur.fetchall()
         for i in res:
-            print i[1]
+            print int(i[1])
 
     def query_lock(self):
         """Query lock"""
