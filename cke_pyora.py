@@ -348,7 +348,7 @@ class Checks(object):
         for i in res:
             print "Tablespace " + i[0] + " is " + str(i[1]) + "% full."
 
-    def tablespace_usage_txt(self,threshold):
+    def tablespace_usage_txt(self):
         """"Return tablespace with maximum size usage (string)"""
         sql = '''Select Tablespace_Name,Used 
         from(
@@ -365,7 +365,7 @@ class Checks(object):
         for i in res:
             print i[0]
 
-    def tablespace_usage_num(self,threshold):
+    def tablespace_usage_num(self):
         """"Return tablespace with  maximum size usage in % (num)"""
         sql = '''Select Tablespace_Name,Used 
         from(
