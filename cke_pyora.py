@@ -494,7 +494,7 @@ class Checks(object):
         from (
         SELECT name group_name, ROUND((1- (free_mb / total_mb))*100, 2)  used
         FROM v$asm_diskgroup
-        order by (1- (free_mb / total_mb))*100 order by desc
+        order by (1- (free_mb / total_mb))*100 desc
         ) where rownum=1'''
         self.cur.execute(sql)
         res = self.cur.fetchall()
@@ -507,7 +507,7 @@ class Checks(object):
         from (
         SELECT name group_name, ROUND((1- (free_mb / total_mb))*100, 2)  used
         FROM v$asm_diskgroup
-        order by (1- (free_mb / total_mb))*100 order by desc
+        order by (1- (free_mb / total_mb))*100 desc
         ) where rownum=1'''
         self.cur.execute(sql)
         res = self.cur.fetchall()
