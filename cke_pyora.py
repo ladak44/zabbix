@@ -584,7 +584,7 @@ class Checks(object):
         self.cur.execute(sql)
         res = self.cur.fetchall()
         for i in res:
-            print i[0]
+            print int(i[0])
 
 
     def show_users(self):
