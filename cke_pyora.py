@@ -359,7 +359,7 @@ class Checks(object):
         (SELECT tablespace_name,TRUNC(SUM(bytes)/1024/1024) AS size_mb,TRUNC(SUM(GREATEST(bytes,maxbytes))/1024/1024) AS max_size_mb
         From   Dba_Data_Files Group By Tablespace_Name) B Where  A.Tablespace_Name = B.Tablespace_Name
         ) Order By 100-(TRUNC((max_free_mb/max_size_mb) * 100)) desc
-        ) where rownum=1'''.format(threshold)
+        ) where rownum=1'''
         self.cur.execute(sql)
         res = self.cur.fetchall()
         for i in res:
@@ -376,7 +376,7 @@ class Checks(object):
         (SELECT tablespace_name,TRUNC(SUM(bytes)/1024/1024) AS size_mb,TRUNC(SUM(GREATEST(bytes,maxbytes))/1024/1024) AS max_size_mb
         From   Dba_Data_Files Group By Tablespace_Name) B Where  A.Tablespace_Name = B.Tablespace_Name
         ) Order By 100-(TRUNC((max_free_mb/max_size_mb) * 100)) desc
-        ) where rownum=1'''.format(threshold)
+        ) where rownum=1'''
         self.cur.execute(sql)
         res = self.cur.fetchall()
         for i in res:
