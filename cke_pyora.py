@@ -6,6 +6,7 @@ import argparse
 import cx_Oracle
 import inspect
 import json
+import sqlite3
 import re
 
 version = 1.1
@@ -458,14 +459,12 @@ class Checks(object):
 
         self.cur.execute(sql)
         res = self.cur.fetchall()
-        col = res.split('.')
-        for i in col:
-            print col[i]
+#        col = res.split('.')
+#        for i in col:
+#            print col[i]
+        print [0][0]
+        print [0][1]
 
-
-#        for j in range (2):
-#        for i in res:
-#            print i[1]
 
 
 
