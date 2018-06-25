@@ -351,15 +351,27 @@ class Checks(object):
 
     def tablespace_usage_txt(self):
         """"Return tablespace with maximum size usage (string)"""
-        sql = '''Select Tablespace_Name,Used 
-        from(
-        SELECT  tablespace_name,
-        100-(TRUNC((max_free_mb/max_size_mb) * 100)) AS USED
-        FROM ( SELECT a.tablespace_name,b.size_mb,a.free_mb,b.max_size_mb,a.free_mb + (b.max_size_mb - b.size_mb) AS max_free_mb
-        FROM   (SELECT tablespace_name,TRUNC(SUM(bytes)/1024/1024) AS free_mb FROM dba_free_space GROUP BY tablespace_name) a,
-        (SELECT tablespace_name,TRUNC(SUM(bytes)/1024/1024) AS size_mb,TRUNC(SUM(GREATEST(bytes,maxbytes))/1024/1024) AS max_size_mb
-        From   Dba_Data_Files Group By Tablespace_Name) B Where  A.Tablespace_Name = B.Tablespace_Name
-        ) Order By 100-(TRUNC((max_free_mb/max_size_mb) * 100)) desc
+        sql = '''Select Tablespace_Name,Used
+        from (
+        SELECT t11.tablespace_name,(1-(ROUND((ROUND(t11.max_size,0)- ROUND(CURRENT_SIZE - CURRENT_FREE,0))/ROUND(t11.max_size,0),2)))*100 used
+        FROM
+        (
+            SELECT t1.tablespace_name,               
+            SUM(DECODE(SIGN(t1.bytes-t1.maxbytes),1,t1.bytes,t1.maxbytes))/1024/1024 max_size,
+            SUM(NVL(t2.free, 0) + DECODE(SIGN(t1.bytes-t1.maxbytes), 1, 0 ,t1.maxbytes-t1.bytes))/1024/1024 max_free,
+            SUM(t1.bytes)/1024/1024 current_size,
+            SUM(NVL(t2.free, 0))/1024/1024 current_free
+            FROM (SELECT file_id, file_name, tablespace_name, bytes, maxbytes, autoextensible 
+            FROM dba_data_files) t1, 
+        ( SELECT file_id, SUM(bytes) free 
+          FROM dba_free_space 
+            GROUP BY file_id
+         ) t2
+            WHERE  t1.file_id = t2.file_id(+) 
+            GROUP BY tablespace_name
+        ) T11 , Dba_Tablespaces T3
+            Where T3.Contents = 'PERMANENT' And  T11.Tablespace_Name = T3.Tablespace_Name
+            Order By (1-(Round((Round(T11.Max_Size,0)- Round(Current_Size - Current_Free,0))/Round(T11.Max_Size,0),2))) Desc
         ) where rownum=1'''
         self.cur.execute(sql)
         res = self.cur.fetchall()
@@ -368,15 +380,27 @@ class Checks(object):
 
     def tablespace_usage_num(self):
         """"Return tablespace with  maximum size usage in % (num)"""
-        sql = '''Select Tablespace_Name,Used 
-        from(
-        SELECT  tablespace_name,
-        100-(TRUNC((max_free_mb/max_size_mb) * 100)) AS USED
-        FROM ( SELECT a.tablespace_name,b.size_mb,a.free_mb,b.max_size_mb,a.free_mb + (b.max_size_mb - b.size_mb) AS max_free_mb
-        FROM   (SELECT tablespace_name,TRUNC(SUM(bytes)/1024/1024) AS free_mb FROM dba_free_space GROUP BY tablespace_name) a,
-        (SELECT tablespace_name,TRUNC(SUM(bytes)/1024/1024) AS size_mb,TRUNC(SUM(GREATEST(bytes,maxbytes))/1024/1024) AS max_size_mb
-        From   Dba_Data_Files Group By Tablespace_Name) B Where  A.Tablespace_Name = B.Tablespace_Name
-        ) Order By 100-(TRUNC((max_free_mb/max_size_mb) * 100)) desc
+        sql = '''Select Tablespace_Name,Used
+        from (
+        SELECT t11.tablespace_name,(1-(ROUND((ROUND(t11.max_size,0)- ROUND(CURRENT_SIZE - CURRENT_FREE,0))/ROUND(t11.max_size,0),2)))*100 used
+        FROM
+        (
+            SELECT t1.tablespace_name,               
+            SUM(DECODE(SIGN(t1.bytes-t1.maxbytes),1,t1.bytes,t1.maxbytes))/1024/1024 max_size,
+            SUM(NVL(t2.free, 0) + DECODE(SIGN(t1.bytes-t1.maxbytes), 1, 0 ,t1.maxbytes-t1.bytes))/1024/1024 max_free,
+            SUM(t1.bytes)/1024/1024 current_size,
+            SUM(NVL(t2.free, 0))/1024/1024 current_free
+            FROM (SELECT file_id, file_name, tablespace_name, bytes, maxbytes, autoextensible 
+            FROM dba_data_files) t1, 
+        ( SELECT file_id, SUM(bytes) free 
+          FROM dba_free_space 
+            GROUP BY file_id
+         ) t2
+            WHERE  t1.file_id = t2.file_id(+) 
+        GROUP BY tablespace_name
+        ) T11 , Dba_Tablespaces T3
+        Where T3.Contents = 'PERMANENT' And  T11.Tablespace_Name = T3.Tablespace_Name
+        Order By (1-(Round((Round(T11.Max_Size,0)- Round(Current_Size - Current_Free,0))/Round(T11.Max_Size,0),2))) Desc
         ) where rownum=1'''
         self.cur.execute(sql)
         res = self.cur.fetchall()
